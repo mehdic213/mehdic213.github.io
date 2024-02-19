@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAM PAMPAM</title>
+<style>
+  body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #242424; transition: background-color 0.3s; font-family: Arial, sans-serif; }
+  .chat-window { width: 40%; max-width: 600px; min-width: 300px; height: 70vh; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; transition: background-color 0.3s; }
+  .messages { flex: 1; padding: 20px; overflow-y: auto; }
+  .input-area { padding: 10px; background: #f7f7f7; display: flex; }
+  .input { flex: 1; padding: 10px; border-radius: 18px; border: 1px solid #ccc; margin-right: 10px; }
+  .send { padding: 10px 15px; border: none; background: #5b61b9; color: #fff; border-radius: 18px; cursor: pointer; }
+  .dark-mode-toggle { position: fixed; top: 10px; right: 10px; padding: 10px 15px; border: none; background: #5b61b9; color: #fff; border-radius: 18px; cursor: pointer; }
+  .dark-theme { --bg-color: #333; --window-bg-color: #1f1f1f; --input-bg-color: #1f1f1f; --text-color: #f0f0f0; --button-bg-color: #575fcf; }
+  .dark-theme body { background-color: var(--bg-color); }
+  .dark-theme .chat-window { background: var(--window-bg-color); color: var(--text-color); }
+  .dark-theme .input-area { background: var(--input-bg-color); }
+  .dark-theme .input { background: var(--window-bg-color); color: var(--text-color); }
+  .dark-theme .send { background: var(--button-bg-color); }
+  .dark-theme .dark-mode-toggle { background: var(--button-bg-color); }
+</style>
+<body>
+</head><div class="chat-window">
+    <div class="messages" id="messages"></div>
+    <div class="input-area">
+      <input type="text" id="chatInput" class="input" placeholder="Type your message here...">
+      <button id="sendButton" class="send">Send</button>
+    </div>
+  </div>
+  <button class="dark-mode-toggle">Dark Mode</button>
+  
+  <script>
+    document.body.classList.toggle('dark-theme')
+
+    const params = new URLSearchParams(window.location.search);
+    const ws = new WebSocket('ws://34.207.114.141:2130/ws');
+    const chatInput = document.getElementById('chatInput');
+    const messagesDiv = document.getElementById('messages');
+  
+    function sendMessage() {
+      const content = chatInput.value.trim();
+      if(content) {
+        const now = new Date();
+        const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+        ws.send(JSON.stringify({ timestamp, username: params.get('username'), invitationCode: params.get('invitationCode'), type: 'message', content }));
+        chatInput.value = '';
+      }
+    }
+  
+    chatInput.addEventListener('keypress', e => {
+      if(e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  
+    document.getElementById('sendButton').addEventListener('click', sendMessage);
+  
+    ws.onmessage = event => {
+      const msg = JSON.parse(event.data);
+      const msgElement = document.createElement('div');
+      msgElement.textContent = `${msg.timestamp} ${msg.username}: ${msg.content}`;
+      messagesDiv.appendChild(msgElement);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    };
+  
+    document.querySelector('.dark-mode-toggle').addEventListener('click', () => document.body.classList.toggle('dark-theme'));
+  </script>
+  
+  </body>
+</html>
