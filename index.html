@@ -34,7 +34,7 @@
     document.body.classList.toggle('dark-theme')
 
     const params = new URLSearchParams(window.location.search);
-    const ws = new WebSocket('ws://34.207.114.141:2130/ws');
+    const ws = new WebSocket('wss://34.207.114.141:2130/ws');
     const chatInput = document.getElementById('chatInput');
     const messagesDiv = document.getElementById('messages');
   
